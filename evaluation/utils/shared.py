@@ -176,6 +176,9 @@ def make_metadata(
     model_path = model_name.replace(':', '_').replace('@', '-')
     eval_note = f'_N_{eval_note}' if eval_note else ''
 
+    if details is not None and 'task_type' in details:
+        eval_note = f'_T_{details["task_type"]}{eval_note}'
+
     eval_output_path = os.path.join(
         eval_output_dir,
         dataset_name,
@@ -202,9 +205,9 @@ def make_metadata(
         dataset=dataset_name,
         data_split=data_split,
         details=details,
-        condenser_config=condenser_config
-        if condenser_config
-        else NoOpCondenserConfig(),
+        condenser_config=(
+            condenser_config if condenser_config else NoOpCondenserConfig()
+        ),
     )
     metadata_json = metadata.model_dump_json()
     logger.info(f'Metadata: {metadata_json}')
