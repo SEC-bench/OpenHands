@@ -53,7 +53,7 @@ AGENT_CLS_TO_FAKE_USER_RESPONSE_FN = {
     'CodeActAgent': codeact_user_response,
 }
 
-SECB_IMAGE_PREFIX = 'hwiwonlee/secb.eval.x86_64'
+SECB_IMAGE_PREFIX = 'hwiwonlee/secb.eval.x86_64.oh'
 
 # Sanitizer error message patterns
 SANITIZER_ERROR_PATTERNS = [
@@ -272,9 +272,7 @@ def get_config(
     base_container_image = (
         get_instance_docker_image(instance['instance_id'], use_official_image)
         + ':'
-        + 'poc'
-        if task_type == 'poc'
-        else 'patch'
+        + ('poc' if task_type == 'poc' else 'patch')
     )
     logger.info(
         f'Using instance container image: {base_container_image}. '
@@ -283,7 +281,9 @@ def get_config(
     )
 
     sandbox_config = get_default_sandbox_config_for_eval()
-    sandbox_config.base_container_image = base_container_image
+    # sandbox_config.base_container_image = base_container_image
+    sandbox_config.runtime_container_image = base_container_image
+    sandbox_config.runtime_startup_env_vars = {'NO_CHANGE_TIMEOUT_SECONDS': '300'}
     sandbox_config.enable_auto_lint = False
     sandbox_config.use_host_network = False
     # Add platform to the sandbox config to solve issue 4401
@@ -295,6 +295,7 @@ def get_config(
     sandbox_config.docker_runtime_kwargs = {
         # 'security_opt': ['seccomp=unconfined'],
         'auto_remove': True,
+        'network_mode': 'none',
     }
 
     max_budget_per_task = (
