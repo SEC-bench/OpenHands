@@ -295,7 +295,6 @@ def get_config(
     sandbox_config.docker_runtime_kwargs = {
         # 'security_opt': ['seccomp=unconfined'],
         'auto_remove': True,
-        'network_mode': 'none',
     }
 
     max_budget_per_task = (
